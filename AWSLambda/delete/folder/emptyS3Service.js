@@ -26,7 +26,7 @@ async function emptyS3Directory(bucket, dir) {
     
     return {
         statusCode: 200,
-        body: JSON.stringify('Successfully deleted'),
+        body: JSON.stringify({Message: "Folder successfully deleted"}),
     };
 }
 
