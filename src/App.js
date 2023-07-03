@@ -9,22 +9,31 @@ class App extends Component {
   }
 
   onFileChange = event => {
+    console.log("event: ", event)
     this.setState({ selectedFile: event.target.files[0] });
   }
 
   onFileUpload = () => {
-    const formData = new FormData();
-    formData.append(
-      "demo file",
-      this.state.selectedFile,
-      this.state.selectedFile.name
-    );
-    // call api
-    axios.post("https://103g1j8fy5.execute-api.us-east-1.amazonaws.com/dev/upload", formData).then(() => {
-      this.setState({ selectedFile: null });
-      this.setState({ fileUploadedSuccessfully: true });
-    });
-    console.log(formData);
+    if (this.state.selectedFile) {
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        const base64String = reader.result.split(',')[1] // Extract the Base64 data from the data URL
+        console.log("base64String: ", base64String);
+        const formData = new FormData();
+        formData.append(
+          this.state.selectedFile.name,
+          base64String
+        )
+        axios.post("https://103g1j8fy5.execute-api.us-east-1.amazonaws.com/dev/upload", formData)
+          .then(() => {
+            this.setState({ selectedFile: null, fileUploadedSuccessfully: true });
+          })
+          .catch(error => {
+            console.error('Error uploading file:', error);
+          });
+      };
+      reader.readAsDataURL(this.state.selectedFile);
+    }
   }
 
   fileData = () => {
