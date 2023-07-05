@@ -51,6 +51,44 @@ class App extends Component {
     }
   }
 
+  onFileModify = () => {
+    if (this.state.selectedFile) {
+      if (this.state.selectedFile.name.endsWith(".txt")) {
+        const formData = new FormData();
+        formData.append(
+          this.state.selectedFile.name,
+          this.state.selectedFile
+        );
+        // call api
+        axios.put("https://103g1j8fy5.execute-api.us-east-1.amazonaws.com/dev/mod/presentation1/test.txt", formData).then(() => {
+          this.setState({ selectedFile: null });
+          this.setState({ fileUploadedSuccessfully: true });
+        });
+        console.log(formData);
+      }
+      else {
+        const reader = new FileReader();
+        reader.onloadend = () => {
+          const base64String = reader.result.split(',')[1] // Extract the Base64 data from the data URL
+          console.log("base64String: ", base64String);
+          const formData = new FormData();
+          formData.append(
+            this.state.selectedFile.name,
+            base64String
+          )
+          axios.put("https://103g1j8fy5.execute-api.us-east-1.amazonaws.com/dev/mod/presentation1/best_model.png", formData)
+            .then(() => {
+              this.setState({ selectedFile: null, fileUploadedSuccessfully: true });
+            })
+            .catch(error => {
+              console.error('Error modifying file:', error);
+            });
+        };
+        reader.readAsDataURL(this.state.selectedFile);
+      }
+    }
+  }
+
   fileData = () => {
     if (this.state.selectedFile) {
       return (
@@ -87,6 +125,9 @@ class App extends Component {
           <input type="file" onChange={this.onFileChange} />
           <button onClick={this.onFileUpload}>
             Upload
+          </button>
+          <button onClick={this.onFileModify}>
+            Modify
           </button>
         </div>
         {this.fileData()}
